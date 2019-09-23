@@ -2,7 +2,7 @@
 #coding=utf-8
 
 """
-file: train_LeNet.py
+file: train_base_model.py
 autor: chenzhongtao
 """
 
@@ -60,30 +60,33 @@ def train_model(mnist):
     input_y = tf.placeholder(tf.float32, [None, 10])
 
     [loss, accuracy, train_step] = setup_model(input_x, input_y)
-    sess = tf.Session()
-    sess.run(tf.global_variables_initializer())
     
     feature = mnist.train.images
     label = mnist.train.labels
     feature = feature.reshape((feature.shape[0], 28, 28, 1))
     steps = int(feature.shape[0] / batch_size)
 
-    for i in range(epoch):
-        loss_list = []
-        accuracy_list = []
-        for j in range(steps):
-            batch = [feature[j: j + batch_size], label[j: j + batch_size]]
-            loss_out, accuracy_out, _ = sess.run([loss, accuracy, train_step], feed_dict={input_x: batch[0], input_y: batch[1]})
-            loss_list.append(loss_out)
-            accuracy_list.append(accuracy_out)
-        print ("epoch: {}, loss mean: {}, accuracy: {}".format(i, np.mean(np.array(loss_list)), np.mean(np.array(accuracy_list))))
-
-    print ("test model")
     test_feature = mnist.test.images
     test_label = mnist.test.labels
     test_feature = test_feature.reshape((test_feature.shape[0], 28, 28, 1))
-    test_accuracy = sess.run(accuracy, feed_dict={input_x: test_feature, input_y: test_label})
-    print ("test accuracy: {}".format(test_accuracy))
+
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+
+        for i in range(epoch):
+            loss_list = []
+            accuracy_list = []
+            for j in range(steps):
+                batch = [feature[j: j + batch_size], label[j: j + batch_size]]
+                loss_out, accuracy_out, _ = sess.run([loss, accuracy, train_step], feed_dict={input_x: batch[0], input_y: batch[1]})
+                loss_list.append(loss_out)
+                accuracy_list.append(accuracy_out)
+            print ("epoch: {}, loss mean: {}, accuracy: {}".format(i, np.mean(np.array(loss_list)), np.mean(np.array(accuracy_list))))
+
+        print ("test model")
+
+        test_accuracy = sess.run(accuracy, feed_dict={input_x: test_feature, input_y: test_label})
+        print ("test accuracy: {}".format(test_accuracy))
 
 
 if __name__ == '__main__':
